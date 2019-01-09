@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title></title>
+  <link rel="stylesheet" href="">
+</head>
+<body>
+  <span id="price"></span> * 2 = <span id="total"></span>
+</body>
+<script>
+  // vue
+  let data = { price: 5, quantity: 2 }
+  let target = null
+  class Dep {
+    constructor () {
+      this.subscribers = []
+    }
+    depend () {
+      if (target && !this.subscribers.includes(target)) {
+        this.subscribers.push(target) 
+      }
+    }
+    notify () {
+      this.subscribers.forEach(sub => sub())
+    }
+  }
+  Object.keys(data).forEach(key => {
+    let internalValue = data[key]
+
+    const dep = new Dep()
+
+    Object.defineProperty(data, key, {
+      get() {
+        dep.depend() // 依赖收集
+        return internalValue
+      },
+      set(newVal) {
+        internalValue = newVal
+        dep.notify() // 派发更新
+      }
+    })
+  })
+  function watcher(myFun) {
+    target = myFun
+    target()
+    target = null
+  }
+  watcher(() => {
+    data.total = data.price * data.quantity
+    document.getElementById('price').innerHTML = data.price
+    document.getElementById('total').innerHTML = data.total
+  })
+</script>
+</html>
